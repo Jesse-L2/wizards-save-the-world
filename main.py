@@ -22,9 +22,9 @@ BOMB_ENEMY = pygame.image.load("assets/enemy_bomb.png")
 REAPER_ENEMY = pygame.image.load("assets/grim-reaper.png")
 MINOTAUR_ENEMY = pygame.image.load("assets/minotaur.png")
 GROUND = pygame.transform.scale(pygame.image.load("assets/soil.png"), (WIDTH, HEIGHT / 8))
-FIRE = pygame.image.load("assets/fire.png")
-LIGHTNING = pygame.image.load("assets/lightning.png")
-WATER = pygame.image.load("assets/wave.png")
+FIRE = pygame.transform.scale(pygame.image.load("assets/fire.png"), (WIDTH / 16, HEIGHT / 16))
+LIGHTNING = pygame.transform.scale(pygame.image.load("assets/lightning.png"), (WIDTH / 16, HEIGHT / 16))
+WATER = pygame.transform.scale(pygame.image.load("assets/wave.png"), (WIDTH / 16, HEIGHT / 16))
 HEART = pygame.image.load("assets/heart.png")
 MAIN_SCREEN = pygame.transform.scale(pygame.image.load("assets/main_screen.png"), (WIDTH, HEIGHT))
 BG = pygame.transform.scale(pygame.image.load("assets/fall-bg.png"), (WIDTH, HEIGHT))
@@ -156,6 +156,15 @@ class Player(GameEntity):
     def gravity(self):
         if self.is_falling:
             self.y += 10
+
+    def change_attack_element(self):
+        if self.attack_img == LIGHTNING:
+            self.attack_img = WATER
+        elif self.attack_img == WATER:
+            self.attack_img = FIRE
+        else:
+            self.attack_img = LIGHTNING
+
 
 
 class ElementalAttack:
@@ -300,7 +309,7 @@ def main():
             player.attack()
         # Change attack element
         if keys[pygame.K_r]:
-            player.attack_cycle()
+            player.change_attack_element()
 
         for enemy in enemies[:]:
             enemy.move(enemy_vel)
