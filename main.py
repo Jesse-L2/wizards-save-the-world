@@ -104,11 +104,10 @@ class Player(GameEntity):
         super().__init__(x, y, health)
         self.image = WIZARD
         # Add list and add lightning and fire attacks
-        self.attack_image = LIGHTNING
+        self.attack_img = LIGHTNING
         self.num_hearts = health
         # Mask allows for better pixel collision (no more rectangular collision)
         self.mask = pygame.mask.from_surface(self.image)
-        self.attack_type = ['fire', 'water', 'lightning']
         self.is_jumping = False
         self.is_falling = False
 
@@ -160,19 +159,16 @@ class Player(GameEntity):
 
 
 class ElementalAttack:
-    def __init__(self, x, y, element, attack_img):
-
-        self.attack_img = attack_img
-        elemental_attacks = [
-            LIGHTNING,
-            FIRE,
-            WATER,
-        ]
-
+    # TODO: Add elemental attacks affecting certain enemy types more than others
+    def __init__(self, x, y, attack_img):
+        # elemental_attacks = [
+        #     LIGHTNING,
+        #     FIRE,
+        #     WATER,
+        # ]
         self.x = x
         self.y = y
-        self.element = elemental_attacks[0]
-        self.attack_img = elemental_attacks[0]
+        self.attack_img = attack_img
         # Mask makes collision with the object match the image
         self.mask = pygame.mask.from_surface(self.attack_img)
 
@@ -282,7 +278,7 @@ def main():
             level += 1
             enemy_wave_count += 2
             for _ in range(enemy_wave_count):
-                enemy = Enemy(random.randrange(WIDTH, WIDTH + 300), HEIGHT,
+                enemy = Enemy(random.randrange(0, WIDTH + 100), HEIGHT,
                               random.choice(["bomb", "minotaur", "reaper"]))
                 enemies.append(enemy)
 
@@ -299,9 +295,12 @@ def main():
             player.x += player_vel
         if keys[pygame.K_w] and player.y - player_vel > 0:  # up
             player.jump()
-
+        # Default is lightning attack
         if keys[pygame.K_SPACE]:
             player.attack()
+        # Change attack element
+        if keys[pygame.K_r]:
+            player.attack_cycle()
 
         for enemy in enemies[:]:
             enemy.move(enemy_vel)
@@ -312,7 +311,7 @@ def main():
                 # should probably add a collision timer and not kill the enemy
                 enemies.remove(enemy)
 
-        player.move_attacks(player_attack_vel)
+        player.move_attacks(player_attack_vel, enemies)
 
         redraw_window()
 
