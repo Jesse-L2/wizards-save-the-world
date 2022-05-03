@@ -57,8 +57,8 @@ def main_menu():
 
 
 class GameEntity:
-    # 0.5 second cooldown
-    COOLDOWN = 30
+    # 1 second cooldown - 60/60FPS = 1 sec
+    COOLDOWN = 60
 
     def __init__(self, x, y, health=5):
         self.x = x
@@ -104,7 +104,7 @@ class Player(GameEntity):
         super().__init__(x, y, health)
         self.image = WIZARD
         # Add list and add lightning and fire attacks
-        self.attack_image = WATER
+        self.attack_image = LIGHTNING
         self.num_hearts = health
         # Mask allows for better pixel collision (no more rectangular collision)
         self.mask = pygame.mask.from_surface(self.image)
@@ -147,15 +147,48 @@ class Player(GameEntity):
             pygame.blit(HEART, win, (x + offset, y))
 
     def jump(self):
+        # Can only jump when not currently jumping
         if self.is_jumping is False:
-            self.is_falling = False
+            self.is_falling = True
             self.is_jumping = True
             if self.is_jumping:
-                self.y -= 20
+                self.y -= 40
 
     def gravity(self):
-        if self.is_jumping:
-            self.y += 3
+        if self.is_falling:
+            self.y += 10
+
+
+class ElementalAttack:
+    def __init__(self, x, y, element, attack_img):
+
+        self.attack_img = attack_img
+        elemental_attacks = [
+            LIGHTNING,
+            FIRE,
+            WATER,
+        ]
+
+        self.x = x
+        self.y = y
+        self.element = elemental_attacks[0]
+        self.attack_img = elemental_attacks[0]
+        # Mask makes collision with the object match the image
+        self.mask = pygame.mask.from_surface(self.attack_img)
+
+    def draw(self, win):
+        win.blit(self.attack_img, (self.x, self.y))
+
+    #  TODO: Figure out how to set angle attack is fired at
+    def move(self, vel):
+        self.x += vel
+
+    def collision(self, obj):
+        return collide(self, obj)
+
+    def off_screen(self, width):
+        # if off-screen - True, if on screen - False
+        return not (width >= self.x >= 0)
 
 
 class Enemy(GameEntity):
@@ -176,37 +209,6 @@ class Enemy(GameEntity):
 
     def attack(self):
         pass
-
-
-class ElementalAttack:
-    def __init__(self, x, y, element, image):
-
-        elemental_type_map = {
-            "lightning": LIGHTNING,
-            "water": WATER,
-            "fire": FIRE,
-        }
-
-        self.x = x
-        self.y = y
-        self.elemental_type = elemental_type_map[element]
-        self.image = image
-        # Mask makes collision with the object match the image
-        self.mask = pygame.mask.from_surface(self.image)
-
-    def draw(self, win):
-        win.blit(self.image, (self.x, self.y))
-
-    #  TODO: Figure out how to set angle attack is fired at
-    def move(self, vel):
-        self.x += vel
-
-    def collision(self, obj):
-        return collide(self, obj)
-
-    def off_screen(self, width):
-        # if off-screen - True, if on screen - False
-        return not (width >= self.x >= 0)
 
 
 class Platform(pygame.sprite.Sprite):
@@ -310,7 +312,7 @@ def main():
                 # should probably add a collision timer and not kill the enemy
                 enemies.remove(enemy)
 
-        player.move_attacks(player_attack_vel, enemies)
+        player.move_attacks(player_attack_vel)
 
         redraw_window()
 
