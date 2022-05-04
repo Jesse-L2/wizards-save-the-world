@@ -238,7 +238,7 @@ def main():
     player_attack_vel = 7
 
     enemies = []
-    enemy_vel = 2
+    enemy_vel = 1
     enemy_wave_count = 0
 
     clock = pygame.time.Clock()
@@ -287,7 +287,7 @@ def main():
             level += 1
             enemy_wave_count += 2
             for _ in range(enemy_wave_count):
-                enemy = Enemy(random.randrange(0, WIDTH + 100), HEIGHT-100,
+                enemy = Enemy(random.randrange(0, WIDTH), HEIGHT-125,
                               random.choice(["bomb", "minotaur", "reaper"]))
                 enemies.append(enemy)
 
