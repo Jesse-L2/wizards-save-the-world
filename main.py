@@ -18,9 +18,9 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wizards Save the World")
 # Load all art assets
 WIZARD = pygame.transform.scale(pygame.image.load("assets/wizard.png"), (WIDTH / 16, HEIGHT / 16))
-BOMB_ENEMY = pygame.image.load("assets/enemy_bomb.png")
-REAPER_ENEMY = pygame.image.load("assets/grim-reaper.png")
-MINOTAUR_ENEMY = pygame.image.load("assets/minotaur.png")
+BOMB_ENEMY = pygame.transform.scale(pygame.image.load("assets/enemy_bomb.png"), (WIDTH / 16, HEIGHT / 16))
+REAPER_ENEMY = pygame.transform.scale(pygame.image.load("assets/grim-reaper.png"), (WIDTH / 16, HEIGHT / 16))
+MINOTAUR_ENEMY = pygame.transform.scale(pygame.image.load("assets/minotaur.png"), (WIDTH / 16, HEIGHT / 16))
 GROUND = pygame.transform.scale(pygame.image.load("assets/soil.png"), (WIDTH, HEIGHT / 8))
 FIRE = pygame.transform.scale(pygame.image.load("assets/fire.png"), (WIDTH / 16, HEIGHT / 16))
 LIGHTNING = pygame.transform.scale(pygame.image.load("assets/lightning.png"), (WIDTH / 16, HEIGHT / 16))
@@ -234,13 +234,12 @@ def main():
     level = 0
     hearts = 5
     dead_count = 0
+    player_vel = 4
+    player_attack_vel = 7
 
     enemies = []
     enemy_vel = 2
     enemy_wave_count = 0
-
-    player_vel = 4
-    player_attack_vel = 7
 
     clock = pygame.time.Clock()
     main_font = pygame.font.SysFont("Gothic", 50)
@@ -256,7 +255,8 @@ def main():
         # Drawing lives_label
         lives_label = main_font.render(f"Hearts: {player.num_hearts}", 1, (255, 255, 255))
         window.blit(lives_label, (50, 50))
-        # taking the enemies list and drawing those enemies on the window
+
+        # take the enemies list and draw/update those enemies on the window
         for enemy in enemies:
             enemy.draw(window)
 
@@ -287,7 +287,7 @@ def main():
             level += 1
             enemy_wave_count += 2
             for _ in range(enemy_wave_count):
-                enemy = Enemy(random.randrange(0, WIDTH + 100), HEIGHT,
+                enemy = Enemy(random.randrange(0, WIDTH + 100), HEIGHT-100,
                               random.choice(["bomb", "minotaur", "reaper"]))
                 enemies.append(enemy)
 
