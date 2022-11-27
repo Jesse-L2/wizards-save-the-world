@@ -5,7 +5,10 @@ Enter the wonderful world of Wendyll the Wizard in his journey to purge the land
 
 import pygame
 import random
+from os import listdir
+from os.path import isfile, join
 
+pygame.init()
 # Font initialization
 pygame.font.init()
 
@@ -13,6 +16,8 @@ pygame.font.init()
 WIDTH, HEIGHT = 800, 800
 FPS = 60
 ACC = 0.5
+PLAYER_VEL = 5
+
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 # Set the game name
 pygame.display.set_caption("Wizards Save the World")
@@ -56,17 +61,30 @@ def main_menu():
     pygame.quit()
 
 
-class GameEntity:
+class GameEntity(pygame.sprite.Sprite):  # inheritance for collision
     # 1 second cooldown - 60/60FPS = 1 sec
     COOLDOWN = 60
+    GRAVITY = 1
 
-    def __init__(self, x, y, health=5):
+    def __init__(self, x, y, width, height, health=5):
+        super().__init__()
+        # Spatial Properties
         self.x = x
         self.y = y
+        self.rect = pygame.Rect(x, y, width, height)
+        self.mask = None
+        # Properties for animations and movement
+        self.direction = "right"
+        self.animation_count = 0
+        self.fall_count = 0
+        self.jump_count = 0
+        # Combat Properties
         self.health = health
         self.image = None
         self.attack_img = None
         self.attacks = []
+        self.hit = False
+        self.hit_count = 0
         # Limit on how fast shots can be fired
         self.cool_down_counter = 0
 
