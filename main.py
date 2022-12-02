@@ -55,6 +55,9 @@ def main_menu():
 
     pygame.quit()
 
+def flip_image(sprite):
+    """Flip sprite across Y plane"""
+    return pygame.transform.flip(surface=sprite, flip_x=True, flip_y=False)
 
 class GameEntity:
     # 1 second cooldown - 60/60FPS = 1 sec
