@@ -13,6 +13,9 @@ pygame.font.init()
 WIDTH, HEIGHT = 800, 800
 FPS = 60
 ACC = 0.5
+FALL_SPEED = 1
+MAX_FALL_SPEED = 20
+JUMP_HEIGHT = 75
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 # Set the game name
 pygame.display.set_caption("Wizards Save the World")
@@ -158,15 +161,23 @@ class Player(GameEntity):
 
     def jump(self):
         # Can only jump when not currently jumping
-        if self.is_jumping is False:
+        if not self.is_jumping and not self.is_falling:
             self.is_falling = True
             self.is_jumping = True
             if self.is_jumping:
-                self.y -= 40
+                self.y -= JUMP_HEIGHT
 
     def gravity(self):
         if self.is_falling:
-            self.y += 10
+            self.y += FALL_SPEED
+
+        if self.y >= HEIGHT - 125:
+            # Hit the ground
+            self.y = HEIGHT - 125
+            self.is_falling, self.is_jumping = False, False
+        else:
+            self.is_falling = True
+
 
     def change_attack_element(self):
         if self.attack_img == LIGHTNING:
@@ -234,19 +245,21 @@ class Platform(pygame.sprite.Sprite):
 
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
-    offset_y = obj2.y - obj1.x
+    offset_y = obj2.y - obj1.y
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) is not None
 
 
 def main():
     running = True
     dead = False
+
     # player_jumping = False
     level = 0
     hearts = 5
     dead_count = 0
     player_vel = 4
     player_attack_vel = 7
+
 
     enemies = []
     enemy_vel = 1
@@ -321,6 +334,8 @@ def main():
         # Change attack element
         if keys[pygame.K_r]:
             player.change_attack_element()
+
+        player.gravity()
 
         for enemy in enemies[:]:
             enemy.move(enemy_vel)
