@@ -17,17 +17,26 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 # Set the game name
 pygame.display.set_caption("Wizards Save the World")
 # Load all art assets
-WIZARD = pygame.transform.scale(pygame.image.load("assets/wizard.png"), (WIDTH / 16, HEIGHT / 16))
-BOMB_ENEMY = pygame.transform.scale(pygame.image.load("assets/enemy_bomb.png"), (WIDTH / 16, HEIGHT / 16))
-REAPER_ENEMY = pygame.transform.scale(pygame.image.load("assets/grim-reaper.png"), (WIDTH / 16, HEIGHT / 16))
-MINOTAUR_ENEMY = pygame.transform.scale(pygame.image.load("assets/minotaur.png"), (WIDTH / 16, HEIGHT / 16))
-GROUND = pygame.transform.scale(pygame.image.load("assets/soil.png"), (WIDTH, HEIGHT / 8))
-FIRE = pygame.transform.scale(pygame.image.load("assets/fire.png"), (WIDTH / 16, HEIGHT / 16))
-LIGHTNING = pygame.transform.scale(pygame.image.load("assets/lightning.png"), (WIDTH / 16, HEIGHT / 16))
-WATER = pygame.transform.scale(pygame.image.load("assets/wave.png"), (WIDTH / 16, HEIGHT / 16))
-HEART = pygame.image.load("assets/heart.png")
-MAIN_SCREEN = pygame.transform.scale(pygame.image.load("assets/main_screen.png"), (WIDTH, HEIGHT))
-BG = pygame.transform.scale(pygame.image.load("assets/fall-bg.png"), (WIDTH, HEIGHT))
+def load_img(path, size=None):
+    try:
+        image = pygame.image.load(path)
+        if size:
+            image = pygame.transform.scale(image, size)
+        return image
+    except pygame.error as err:
+        print(f"Error loading image {path}: {err}")
+
+WIZARD = load_img("assets/wizard.png", (WIDTH / 16, HEIGHT / 16))
+BOMB_ENEMY = load_img("assets/enemy_bomb.png", (WIDTH / 16, HEIGHT / 16))
+REAPER_ENEMY = load_img("assets/grim-reaper.png", (WIDTH / 16, HEIGHT / 16))
+MINOTAUR_ENEMY = load_img("assets/minotaur.png", (WIDTH / 16, HEIGHT / 16))
+GROUND = load_img("assets/soil.png", (WIDTH / 16, HEIGHT / 16))
+FIRE = load_img("assets/fire.png", (WIDTH / 16, HEIGHT / 16))
+LIGHTNING = load_img("assets/lightning.png", (WIDTH / 16, HEIGHT / 16))
+WATER = load_img("assets/wave.png", (WIDTH / 16, HEIGHT / 16))
+HEART = load_img("assets/heart.png", (WIDTH, HEIGHT))
+MAIN_SCREEN = load_img("assets/main_screen.png", (WIDTH, HEIGHT))
+BG = load_img("assets/fall-bg.png", (WIDTH, HEIGHT))
 
 
 def main_menu():
