@@ -16,7 +16,13 @@ ACC = 0.5
 FALL_SPEED = 1
 MAX_FALL_SPEED = 20
 JUMP_HEIGHT = 75
+
+MENU, PLAYING, PAUSE, GAME_OVER = "menu", "playing", "pause", "game_over"
+
 window = pygame.display.set_mode((WIDTH, HEIGHT))
+
+
+
 # Set the game name
 pygame.display.set_caption("Wizards Save the World")
 # Load all art assets
@@ -44,28 +50,37 @@ BG = load_img("assets/fall-bg.png", (WIDTH, HEIGHT))
 
 def main_menu():
     title_font = pygame.font.SysFont("gothic", 80)
-    running = True
-    while running:
-        # Place the background on the screen
-        window.blit(MAIN_SCREEN, (0, 0))
-        # Set up start screen
-        title_label = title_font.render("Wizards Save the World", 1, (255, 255, 255))
-        start_label = title_font.render("Click the mouse to begin...", 1, (255, 255, 255))
-        window.blit(title_label, (WIDTH / 2 - title_label.get_width() / 2, title_label.get_height() / 2))
-        window.blit(start_label, (WIDTH / 2 - start_label.get_width() / 2, HEIGHT - start_label.get_height() / 2 - 550))
+    window.blit(MAIN_SCREEN, (0, 0))
+    title_label = title_font.render("Wizards Save the World", True, (255, 255, 255))
+    start_label = title_font.render("Click the mouse to begin...", True, (255, 255, 255))
+    window.blit(title_label, (WIDTH / 2 - title_label.get_width() / 2, title_label.get_height() / 2))
+    window.blit(start_label, (WIDTH / 2 - start_label.get_width() / 2, HEIGHT - start_label.get_height() / 2 - 550))
+    pygame.display.update()
 
-        pygame.display.update()
+def play_game():
+    pygame.display.update()
 
-        # Loop for starting or quitting the game
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # Change the game window from the title screen and call main
-                window.blit(BG, (0, 0))
-                main()
+def pause_menu():
+    window.fill((50, 50, 50))  # Darker background to signify pause
+    font = pygame.font.SysFont("Gothic", 80)
+    pause_text = font.render("Paused", True, (255, 255, 255))
+    resume_text = font.render("Press P to Resume", True, (255, 255, 255))
 
-    pygame.quit()
+    window.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 3))
+    window.blit(resume_text, (WIDTH // 2 - resume_text.get_width() // 2, HEIGHT // 2))
+
+    pygame.display.update()
+
+def game_over_screen():
+    window.fill((100, 0, 0))
+    font = pygame.font.SysFont("Gothic", 80)
+    game_over_text = font.render("Game Over", True, (255, 255, 255))
+    restart_text = font.render("Press Enter to Restart", True, (255, 255, 255))
+
+    window.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 3))
+    window.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2))
+
+    pygame.display.update()
 
 def flip_image(img):
     """Flip sprite across Y plane"""
@@ -153,11 +168,9 @@ class Player(GameEntity):
 
     # add more code to add more hearts and make adjustable
     def health_bar(self, win):
-        offset = 25  # Number of pixels to separate each heart by
-        for heart, offset in enumerate(self.num_hearts):
-            x, y = 50, 50
-            x += offset
-            pygame.blit(HEART, win, (x + offset, y))
+        x, y = 50, 50
+        for heart in range(self.num_hearts):
+            win.blit(HEART, (x + num_hearts * 25, y))
 
     def jump(self):
         # Can only jump when not currently jumping
@@ -250,16 +263,15 @@ def collide(obj1, obj2):
 
 
 def main():
+    global game_state
     running = True
-    dead = False
+    game_state = MENU
 
-    # player_jumping = False
     level = 0
     hearts = 5
     dead_count = 0
     player_vel = 4
     player_attack_vel = 7
-
 
     enemies = []
     enemy_vel = 1
@@ -277,79 +289,98 @@ def main():
         # Drawing the ground, dynamically assigned per resolution
         window.blit(GROUND, (0, HEIGHT - HEIGHT / 9))
         # Drawing lives_label
-        lives_label = main_font.render(f"Hearts: {player.num_hearts}", 1, (255, 255, 255))
+        lives_label = main_font.render(f"Hearts: {player.num_hearts}", True, (255, 255, 255))
         window.blit(lives_label, (50, 50))
 
         # take the enemies list and draw/update those enemies on the window
         for enemy in enemies:
             enemy.draw(window)
 
-        if dead:
-            lost_label = lost_font.render("You DIED", 1, (255, 0, 0))
+        if game_state == GAME_OVER:
+            lost_label = lost_font.render("You DIED", True, (255, 0, 0))
             window.blit(lost_label, ((WIDTH / 2) - lost_label.get_width() / 2, 350))
 
         player.draw(window)
 
         pygame.display.update()
 
+
     while running:
         # Check and refresh everything at 60FPS
         clock.tick(FPS)
 
-        if hearts <= 0:
-            dead = True
-            dead_count += 1
-
-        if dead:
-            # If the dead timer is up for over 5 seconds
-            if dead_count > FPS * 5:
-                running = False
-            else:
-                continue
-
-        if len(enemies) == 0:
-            level += 1
-            enemy_wave_count += 2
-            for _ in range(enemy_wave_count):
-                enemy = Enemy(random.randrange(0, WIDTH), HEIGHT-125,
-                              random.choice(["bomb", "minotaur", "reaper"]))
-                enemies.append(enemy)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit()
+                running = False
 
-        # Returns a dictionary of the keys and tells if they are pressed
-        keys = pygame.key.get_pressed()
-        # key assignment
-        if keys[pygame.K_a] and player.x - player_vel > 0:  # left
-            player.x -= player_vel
-        if keys[pygame.K_d] and player.x + player_vel + player.get_width() < WIDTH:  # right
-            player.x += player_vel
-        if keys[pygame.K_w] and player.y - player_vel > 0:  # up
-            player.jump()
-        # Default is lightning attack
-        if keys[pygame.K_SPACE]:
-            player.attack()
-        # Change attack element
-        if keys[pygame.K_r]:
-            player.change_attack_element()
+            # Handle input based on game state
+            if game_state == MENU:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    game_state = PLAYING
 
-        player.gravity()
+            elif game_state == PLAYING:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        game_state = PAUSE
+                    elif event.key == pygame.K_r:
+                        player.change_attack_element()
 
-        for enemy in enemies[:]:
-            enemy.move(enemy_vel)
+            elif game_state == PAUSE:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                    game_state = PLAYING
 
-            if collide(enemy, player):
-                player.health -= 1
-                # enemy dies if they collide with player
-                # should probably add a collision timer and not kill the enemy
-                enemies.remove(enemy)
+            elif game_state == GAME_OVER:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    game_state = MENU
 
-        player.move_attacks(player_attack_vel, enemies)
+        # Handle drawing and updating based on game state
+        if game_state == MENU:
+            main_menu()
 
-        redraw_window()
+        elif game_state == PLAYING:
+            if hearts <= 0:
+                game_state = GAME_OVER
+                dead_count += 1
+
+            if len(enemies) == 0:
+                level += 1
+                enemy_wave_count += 2
+                for _ in range(enemy_wave_count):
+                    enemy = Enemy(random.randrange(0, WIDTH), HEIGHT-125,
+                                  random.choice(["bomb", "minotaur", "reaper"]))
+                    enemies.append(enemy)
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_a] and player.x - player_vel > 0:  # left
+                player.x -= player_vel
+            if keys[pygame.K_d] and player.x + player_vel + player.get_width() < WIDTH:  # right
+                player.x += player_vel
+            if keys[pygame.K_w]:  # up
+                player.jump()
+            if keys[pygame.K_SPACE]:
+                player.attack()
+
+            player.gravity()
+
+            for enemy in enemies[:]:
+                enemy.move(enemy_vel)
+
+                if collide(enemy, player):
+                    player.health -= 1
+                    enemies.remove(enemy)
+
+            player.move_attacks(player_attack_vel, enemies)
+
+            redraw_window()
+
+        elif game_state == PAUSE:
+            pause_menu()
+
+        elif game_state == GAME_OVER:
+            game_over_screen()
+
+    pygame.quit()
 
 
 if __name__ == "__main__":
-    main_menu()
+    main()
