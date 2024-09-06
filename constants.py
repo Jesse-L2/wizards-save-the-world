@@ -1,0 +1,7 @@
+# Set game window size
+WIDTH, HEIGHT = 800, 800
+FPS = 60
+ACC = 0.5
+FALL_SPEED = 1
+MAX_FALL_SPEED = 20
+JUMP_HEIGHT = 75
