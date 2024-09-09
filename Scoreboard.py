@@ -15,8 +15,8 @@ class Scoreboard:
     def add(self, entry):
 
         score = entry.get_score()
-        good = self._n < len(self._board) or score > self._board[-1].get_score()
-        if good:
+        to_add = self._n < len(self._board) or score > self._board[-1].get_score()
+        if to_add:
             if self._n < len(self._board):
                 self._n += 1
             j = self._n - 1
