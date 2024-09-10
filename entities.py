@@ -169,7 +169,7 @@ class Enemy(GameEntity):
 
         self.image = enemy_map[enemy_type]
         self.mask = pygame.mask.from_surface(self.image)
-        self.vel = 1
+        self.vel = random.choice([1, -1])
 
     def move(self, vel):
         self.x += self.vel
@@ -186,8 +186,20 @@ class Enemy(GameEntity):
 
 
 class Platform(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y, w, h):
         super().__init__()
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.image = pygame.transform.scale(GROUND, (self.w, self.h))
+
+    def draw(self, win):
+        win.blit(self.image, (self.x, self.y))
+
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.w, self.h)
+
 
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x

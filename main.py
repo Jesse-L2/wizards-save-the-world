@@ -63,10 +63,6 @@ def flip_image(img):
     return pygame.transform.flip(surface=img, flip_x=True, flip_y=False)
 
 
-
-
-
-
 def main():
     global game_state
     running = True
@@ -96,6 +92,8 @@ def main():
         # Drawing lives_label
         lives_label = main_font.render(f"Hearts: {player.num_hearts}", True, (255, 255, 255))
         window.blit(lives_label, (50, 50))
+        for platform in platforms:
+            platform.draw(window)
 
         # take the enemies list and draw/update those enemies on the window
         for enemy in enemies:
@@ -113,6 +111,15 @@ def main():
     while running:
         # Check and refresh everything at 60FPS
         clock.tick(FPS)
+
+        platforms = [
+            Platform(0, HEIGHT - 100, WIDTH, 50),  # Ground platform
+            Platform(50, HEIGHT -100, 500, 20),
+            Platform(150, HEIGHT - 250, 200, 20),  # Example of a higher platform
+            Platform(400, HEIGHT - 350, 250, 20),  # Another platform
+            Platform(700, HEIGHT - 450, 100, 20),  # Another platform
+        ]
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -167,7 +174,7 @@ def main():
 
             player.gravity()
 
-            for enemy in enemies[:]:
+            for enemy in enemies:
                 enemy.move(enemy_vel)
 
                 if collide(enemy, player):
