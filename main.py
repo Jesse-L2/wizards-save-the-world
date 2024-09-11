@@ -95,15 +95,12 @@ def main():
         window.blit(BG, (0, 0))
         # Drawing the ground, dynamically assigned per resolution
         window.blit(GROUND_IMG, (0, HEIGHT - HEIGHT / 9))
-        # Drawing lives_label
         lives_label = main_font.render(f"Hearts: {player.num_hearts}", True, (255, 255, 255))
         window.blit(lives_label, (50, 50))
 
-        # Draw platforms
         for platform in platforms:
             platform.draw(window)
 
-        # Draw enemies
         for enemy in enemies:
             enemy.draw(window)
 

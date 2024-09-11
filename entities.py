@@ -109,19 +109,28 @@ class Player(GameEntity):
             if self.is_jumping:
                 self.y -= JUMP_HEIGHT
 
+    def collides_with(self, obj):
+        player_rect = pygame.Rect(self.x, self.y, self.get_width(), self.get_height())
+        obj_rect = pygame.Rect(obj.x, obj.y, obj.w, obj.h)
+        return player_rect.colliderect(obj_rect)
+
     def gravity(self, platforms):
-        self.y_vel += FALL_SPEED  # Apply gravity
-        if self.y_vel > MAX_FALL_SPEED:
-            self.y_vel = MAX_FALL_SPEED  # Cap the fall speed
+        self.is_falling = True
+        self.y += FALL_SPEED
 
-        self.y += self.y_vel  # Move the player
+        # Check collision with the ground
+        if self.y >= HEIGHT - self.get_height() - 10:  # 10 is a small offset from the bottom
+            self.y = HEIGHT - self.get_height() - 10
+            self.is_falling = False
+            self.is_jumping = False
 
+        # Check collision with platforms
         for platform in platforms:
-            if self.y + self.get_height() >= platform.y and self.y + self.get_height() - self.y_vel < platform.y and platform.x < self.x < platform.x + platform.width:
-                self.y = platform.y - self.get_height()
+            if self.is_falling and self.collides_with(platform):
+                self.y = platform.y - self.get_height()  # Place the player on top of the platform
                 self.is_falling = False
-                self.y_vel = 0
-                break
+                self.is_jumping = False
+                break  # Stop checking other platforms
 
         if self.y > HEIGHT:
             self.y = HEIGHT -125
