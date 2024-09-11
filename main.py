@@ -8,6 +8,7 @@ import random
 from entities import GameEntity, Player, Enemy, ElementalAttack, Platform, GROUND, collide
 from constants import WIDTH, HEIGHT, FPS, ACC, FALL_SPEED, MAX_FALL_SPEED, JUMP_HEIGHT
 from helper_functions import load_img
+import level_data
 
 # Font initialization
 pygame.font.init()
@@ -22,6 +23,9 @@ pygame.display.set_caption("Wizards Save the World")
 MAIN_SCREEN = load_img("assets/main_screen.png", (WIDTH, HEIGHT))
 BG = load_img("assets/fall-bg.png", (WIDTH, HEIGHT))
 MENU, PLAYING, PAUSE, GAME_OVER = "menu", "playing", "pause", "game_over"
+
+GROUND_HEIGHT = 100
+GROUND_IMG = load_img("assets/soil.png", (WIDTH, GROUND_HEIGHT))
 
 
 def main_menu():
@@ -78,24 +82,28 @@ def main():
     enemy_vel = 1
     enemy_wave_count = 0
 
+    platforms = []
+    new_wave = True
+
     clock = pygame.time.Clock()
     main_font = pygame.font.SysFont("Gothic", 50)
     lost_font = pygame.font.SysFont("Gothic", 75)
 
-    player = Player(WIDTH / 2, HEIGHT - 125)
+    player = Player(WIDTH / 2, HEIGHT - 300)
 
     def redraw_window():
-        # Drawing the window at 0,0 (top left)
         window.blit(BG, (0, 0))
         # Drawing the ground, dynamically assigned per resolution
-        window.blit(GROUND, (0, HEIGHT - HEIGHT / 9))
+        window.blit(GROUND_IMG, (0, HEIGHT - HEIGHT / 9))
         # Drawing lives_label
         lives_label = main_font.render(f"Hearts: {player.num_hearts}", True, (255, 255, 255))
         window.blit(lives_label, (50, 50))
+
+        # Draw platforms
         for platform in platforms:
             platform.draw(window)
 
-        # take the enemies list and draw/update those enemies on the window
+        # Draw enemies
         for enemy in enemies:
             enemy.draw(window)
 
@@ -107,19 +115,8 @@ def main():
 
         pygame.display.update()
 
-
     while running:
-        # Check and refresh everything at 60FPS
         clock.tick(FPS)
-
-        platforms = [
-            Platform(0, HEIGHT - 100, WIDTH, 50),  # Ground platform
-            Platform(50, HEIGHT -100, 500, 20),
-            Platform(150, HEIGHT - 250, 200, 20),  # Example of a higher platform
-            Platform(400, HEIGHT - 350, 250, 20),  # Another platform
-            Platform(700, HEIGHT - 450, 100, 20),  # Another platform
-        ]
-
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -154,14 +151,26 @@ def main():
                 game_state = GAME_OVER
                 dead_count += 1
 
+            # Check if all enemies are defeated to start a new wave
             if len(enemies) == 0:
                 level += 1
                 enemy_wave_count += 2
+
+                # Spawn new enemies for the next wave
                 for _ in range(enemy_wave_count):
-                    enemy = Enemy(random.randrange(0, WIDTH), HEIGHT-125,
+                    enemy = Enemy(random.randrange(0, WIDTH), HEIGHT - 125,
                                   random.choice(["bomb", "minotaur", "reaper"]))
                     enemies.append(enemy)
 
+                # Set the flag to true to generate new platforms
+                new_wave = True
+
+            # Generate new platforms at the start of each wave
+            if new_wave:
+                platforms = level_data.generate_platforms()  # Clear old platforms and generate new ones
+                new_wave = False  # Prevent further generation until next wave
+
+            # Player movement
             keys = pygame.key.get_pressed()
             if keys[pygame.K_a] and player.x - player_vel > 0:  # left
                 player.x -= player_vel
@@ -172,8 +181,10 @@ def main():
             if keys[pygame.K_SPACE]:
                 player.attack()
 
-            player.gravity()
+            # Apply gravity and check for platform collisions
+            player.gravity(platforms)
 
+            # Move and update enemies
             for enemy in enemies:
                 enemy.move(enemy_vel)
 

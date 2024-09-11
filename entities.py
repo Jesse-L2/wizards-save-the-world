@@ -26,6 +26,7 @@ class GameEntity:
         self.attacks = []
         # Limit on how fast shots can be fired
         self.cool_down_counter = 0
+        self.y_vel = 0
 
     # update on window, called win to avoid having 2 variables named windows
     def draw(self, win):
@@ -98,7 +99,7 @@ class Player(GameEntity):
     def health_bar(self, win):
         x, y = 50, 50
         for heart in range(self.num_hearts):
-            win.blit(HEART, (x + num_hearts * 25, y))
+            win.blit(HEART, (x + self.num_hearts * 25, y))
 
     def jump(self):
         # Can only jump when not currently jumping
@@ -108,16 +109,23 @@ class Player(GameEntity):
             if self.is_jumping:
                 self.y -= JUMP_HEIGHT
 
-    def gravity(self):
-        if self.is_falling:
-            self.y += FALL_SPEED
+    def gravity(self, platforms):
+        self.y_vel += FALL_SPEED  # Apply gravity
+        if self.y_vel > MAX_FALL_SPEED:
+            self.y_vel = MAX_FALL_SPEED  # Cap the fall speed
 
-        if self.y >= HEIGHT - 125:
-            # Hit the ground
-            self.y = HEIGHT - 125
-            self.is_falling, self.is_jumping = False, False
-        else:
-            self.is_falling = True
+        self.y += self.y_vel  # Move the player
+
+        for platform in platforms:
+            if self.y + self.get_height() >= platform.y and self.y + self.get_height() - self.y_vel < platform.y and platform.x < self.x < platform.x + platform.width:
+                self.y = platform.y - self.get_height()
+                self.is_falling = False
+                self.y_vel = 0
+                break
+
+        if self.y > HEIGHT:
+            self.y = HEIGHT -125
+            # Add logic to lose a life
 
 
     def change_attack_element(self):
@@ -192,6 +200,7 @@ class Platform(pygame.sprite.Sprite):
         self.y = y
         self.w = w
         self.h = h
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
         self.image = pygame.transform.scale(GROUND, (self.w, self.h))
 
     def draw(self, win):
